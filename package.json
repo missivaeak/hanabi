@@ -21,5 +21,8 @@
     "packages/shared",
     "packages/backend",
     "packages/frontend"
-  ]
+  ],
+  "dependencies": {
+    "svelte5-router": "^3.0.2"
+  }
 }
