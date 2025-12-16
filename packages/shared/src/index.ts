@@ -1,7 +1,7 @@
-export type HelloApiResponse = {
-  hello: "world";
-};
+// import * as Card from "./types/Card.js";
+//
+// export {
+//   ...Card
+// }
 
-export default {
-  test: "hej",
-};
+export * from "./Card";

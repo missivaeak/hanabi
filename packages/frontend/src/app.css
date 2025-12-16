@@ -1,11 +1,18 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  --bg-color: light-dark(#f9f9ff, #33333f);
+  --font-color: light-dark(#333333, #dddddd);
+  --theme-color: light-dark(oklch(0.75 0.1 164), oklch(0.85 0.1 164));
+  --accent-color: light-dark(oklch(0.75 0.1 340), oklch(0.85 0.1 340));
+  --font-size: 20px;
+  --line-height: 1.5;
+  --magic: calc(var(--font-size) * var(--line-height));
+
+  font-family: Roboto, Arial, sans-serif;
+  line-height: var(--line-height);
   font-weight: 400;
+  font-size: var(--font-size);
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,67 +20,29 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+:root:has(#light-toggle:checked) {
+  color-scheme: dark;
 }
-a:hover {
-  color: #535bf2;
+
+:root:has(#dark-toggle:checked) {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
+  width: 100dvw;
+  min-height: 100dvh;
+  color: var(--font-color);
+  background-color: var(--bg-color);
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  flex-flow: column nowrap;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-.card {
-  padding: 2em;
-}
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+a {
+  color: var(--accent-color);
 }
