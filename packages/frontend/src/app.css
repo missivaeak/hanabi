@@ -1,8 +1,8 @@
 :root {
   --bg-color: light-dark(#f9f9ff, #33333f);
   --font-color: light-dark(#333333, #dddddd);
-  --theme-color: light-dark(#ABEACD, #2A89BF);
-  --accent-color: light-dark(#EB78C2, #791856);
+  --theme-color: light-dark(oklch(0.75 0.1 164), oklch(0.85 0.1 164));
+  --accent-color: light-dark(oklch(0.75 0.1 340), oklch(0.85 0.1 340));
   --font-size: 20px;
   --line-height: 1.5;
   --magic: calc(var(--font-size) * var(--line-height));
@@ -41,4 +41,8 @@ body {
   background-color: var(--bg-color);
   display: flex;
   flex-flow: column nowrap;
+}
+
+a {
+  color: var(--accent-color);
 }

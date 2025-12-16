@@ -1,9 +1,9 @@
 <script lang="ts">
-import Game from "../components/Game.svelte";
+import { Link } from "svelte5-router";
 </script>
 
 <main class="landing">
-  <Game />
+  <Link to="game">Play</Link>
 </main>
 
 <style>

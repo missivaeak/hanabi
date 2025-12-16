@@ -1,43 +1,42 @@
 <script lang="ts">
 import { type Snippet } from "svelte";
-import type { ControllerLocation } from "../types";
-import { mod } from "../utils";
+import type { MouseEventHandler } from "svelte/elements";
 
 type Props = {
-  index: number;
   children: Snippet;
-  location: ControllerLocation;
-  hand: number;
-  handCount: number;
+  matrix?: DOMMatrix;
+  // onclick?: MouseEventHandler<HTMLButtonElement>;
+  onclick?: () => void;
+  tabindex?: number;
 };
 
-let { children, index, location, hand, handCount }: Props = $props();
-let style = $state(`transform: translate3d(0, 0, ${index + 1}px)`);
-
-let step = -1;
-const steps = [
-  `transform: translate3d(0, 0, ${index + 1}px)`,
-  `transform: translate3d(0, 0, ${index + 200}px) rotate3d(1, 0, 0, -90deg)`,
-  `transform: translate3d(0, 150px, ${index + 150}px)`,
-];
-
-function onClick() {
-  step++;
-
-  style = steps[mod(step, steps.length)];
-}
+let { children, matrix, onclick, tabindex }: Props = $props();
 </script>
 
-<!-- <div class="controller" style={style} onclick={onClick} onkeypress={() => {}} role="button" tabindex="0"> -->
-<div class="controller" style={style} onclick={onClick}>
-  {@render children?.()}
-</div>
+<button class="controller" style:transform={matrix?.toCSS()} onclick={onclick} onkeypress={onclick} tabindex={tabindex}>
+  <div class={onclick ? 'controller__hoverer' : ''}>
+    {@render children?.()}
+  </div>
+</button>
 
 <style>
 .controller {
-  transform-style: preserve-3d;
   grid-column: 1;
   grid-row: 1;
   transition: transform 0.4s ease;
+  border: none;
+  background: none;
+}
+
+.controller:focus, .controller:focus-visible {
+  border: unset;
+  outline: unset;
+  background: unset;
+  box-shadow: unset;
+}
+
+.controller:hover .controller__hoverer,
+.controller:focus .controller__hoverer {
+  scale: 1.1;
 }
 </style>

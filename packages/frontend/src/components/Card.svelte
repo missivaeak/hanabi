@@ -15,6 +15,8 @@ let { color, pips }: Props = $props();
       <div class={`card__pip card__pip--color-${color}`}></div>
     </div>
   {/each}
+  <span class="card__number">{pips}</span>
+  <span class="card__number">{pips}</span>
   <div class="card__back">
     <span class="card__back-text">hanabi</span>
   </div>
@@ -26,12 +28,11 @@ let { color, pips }: Props = $props();
   --border-width: 5px;
   --start-color: 20;
   --color-rotation: calc(360 / 5);
-  --border-color: oklch(from var(--card-color) calc(l - 0.2) c h);
-  --card-width: 200px;
+  --card-width: calc(var(--scene-size) / 8);
   --shadow-size: calc(var(--card-width) / 7);
+  --pip-color: oklch(from var(--card-color) calc(l - 0.2) c h);
 
   background: var(--card-color);
-  border: solid var(--border-width) var(--border-color);
   width: var(--card-width);
   aspect-ratio: 1 / sqrt(2);
   border-radius: calc(var(--border-radius) * sqrt(2)) / var(--border-radius);
@@ -39,7 +40,7 @@ let { color, pips }: Props = $props();
   flex-flow: row wrap;
   justify-content: space-around;
   align-items: center;
-  padding: calc(var(--card-width) / 10) calc(var(--card-width) / 10 * sqrt(2));
+  padding: calc(var(--card-width) / 8) calc(var(--card-width) / 8 * sqrt(2));
   position: relative;
   grid-row: 1;
   grid-column: 1;
@@ -49,23 +50,19 @@ let { color, pips }: Props = $props();
     inset calc(var(--shadow-size) * -1) var(--shadow-size) var(--shadow-size) #FFFFFF33;
 }
 
-.card, .card * {
-  transform-style: preserve-3d;
-}
-
 .card, .card__back {
-  outline: solid 1px black;
+  outline: solid 4px light-dark(oklch(from var(--theme-color) calc(l - 0.4) c h), oklch(from var(--theme-color) calc(l - 0.55) c h));
 }
 
 .card__back {
-  content: 'hanabi';
-  /* background: oklch(88% 0.05 212); */
-  background: linear-gradient(40deg, oklch(88% 0.05 212), oklch(88% 0.05 160));
+  --color-1: light-dark(oklch(from var(--theme-color) calc(l + 0.1) c h), oklch(from var(--theme-color) calc(l - 0.1) c h));
+  --color-2: light-dark(oklch(from var(--accent-color) calc(l + 0.1) c h), oklch(from var(--accent-color) calc(l - 0.1) c h));
+  background: linear-gradient(40deg, var(--color-1), var(--color-2));
+  /* background: linear-gradient(40deg, oklch(88% 0.05 212), oklch(88% 0.05 160)); */
   position: absolute;
-  width: calc(100% + var(--border-width) * 2);
-  height: calc(100% + var(--border-width) * 2);
+  width: 100%;
+  height: 100%;
   border-radius: calc(var(--border-radius) * sqrt(2)) / var(--border-radius);
-  border: solid 5px #000000;
   translate: 0 0 -1px;
   rotate: y 180deg;
   display: flex;
@@ -78,8 +75,36 @@ let { color, pips }: Props = $props();
 .card__back-text {
   font-weight: 600;
   font-size: 2em;
+  color: #333;
   border-top: solid 2px black;
   border-bottom: solid 2px black;
+  scale: calc(var(--scene-size) / 1500px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.card__number {
+  --card-number-size: 50px;
+  position: absolute;
+  font-size: 2em;
+  font-weight: 800;
+  color: var(--pip-color);
+  height: var(--card-number-size);
+  line-height: var(--card-number-size);
+  aspect-ratio: 1/1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.card__number:nth-of-type(1) {
+  top: 0;
+  left: 0;
+}
+
+.card__number:nth-of-type(2) {
+  bottom: 0;
+  right: 0;
+  rotate: 180deg;
 }
 
 .card--color-a {
@@ -117,7 +142,7 @@ let { color, pips }: Props = $props();
 }
 
 .card__pip {
-  background: var(--border-color);
+  background: var(--pip-color);
   width: calc(var(--card-width) / 6);
   aspect-ratio: 1 / 1;
   border-radius: 50%;

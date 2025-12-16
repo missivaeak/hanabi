@@ -1,5 +1,7 @@
 import { mount } from "svelte";
 import "./app.css";
+import "./types/Number.ts";
+import "./types/DOMMatrix";
 import App from "./App.svelte";
 
 const app = mount(App, {

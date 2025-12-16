@@ -14,12 +14,18 @@ let { children }: Props = $props();
 
 <style>
 .view {
-  width: min(100vh, 100vw);
-  height: calc(min(100vh, 100vw) / sqrt(2));
+  --view-width: min(calc(100dvh * (16/9)), 100dvw);
+  width: var(--view-width);
+  /* aspect-ratio: sqrt(2) / 1; */
+  aspect-ratio: 16 / 9;
   position: relative;
-  transform-style: preserve-3d;
   overflow: hidden;
-  background: aliceblue;
-  border: solid 1px cornflowerblue;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 150%, light-dark(#000000cc, #ffffff33), transparent 80%);
+}
+
+.view, .view :global(*) {
+  perspective: 4000px;
 }
 </style>
