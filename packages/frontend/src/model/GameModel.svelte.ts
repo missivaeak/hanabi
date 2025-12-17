@@ -37,8 +37,8 @@ export default class Hanabi {
     player,
   }: GameState | undefined = {}) {
     this.cards = $state(Hanabi.makeDeck());
-    this.playerCount = playerCount ?? 4;
-    this.player = player ?? 0;
+    this.playerCount = playerCount ?? Math.floor(Math.random() * 2 + 3.5);
+    this.player = player ?? Math.floor(Math.random() * this.playerCount);
     this.hands = $state(hands ?? Array(this.playerCount).fill([]));
     this.deck = $state(
       deck ?? this.cards.map((_, i) => i).sort(() => Math.random() - 0.5),
