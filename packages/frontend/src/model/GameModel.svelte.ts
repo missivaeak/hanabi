@@ -68,7 +68,7 @@ export default class Hanabi {
         if (i === this.player) {
           await card.setPlayerHandPosition(hand.length);
         } else {
-          const otherIndex = (this.player + i).mod(this.playerCount);
+          const otherIndex = (i - this.player).mod(this.playerCount) - 1;
           await card.setOtherHandPosition(
             hand.length,
             otherIndex,
@@ -113,7 +113,6 @@ export default class Hanabi {
   private getDeckCard(deckPosition: number, pop?: "pop") {
     const deckIndex =
       deckPosition >= 0 ? deckPosition : this.deck.length + deckPosition;
-    console.log(this.deck.length);
     const cardIndex = this.deck[deckIndex] ?? -1;
 
     if (pop) {
