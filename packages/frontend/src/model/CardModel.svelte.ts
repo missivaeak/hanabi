@@ -85,7 +85,7 @@ export default class CardModel {
     const offsetTransform = handOffsetTransforms[handPosition];
     const offsetRotation = handOffsetAngles[handPosition];
     const otherHandsCount = playerCount - 1;
-    const degrees = 190 * (hand / otherHandsCount) - 68 + offsetRotation;
+    const degrees = 180 * ((hand + 1) / playerCount) - 90 + offsetRotation;
     const radius = 590;
 
     this.matrix = new DOMMatrix()
