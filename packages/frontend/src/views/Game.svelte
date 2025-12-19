@@ -5,7 +5,7 @@ import Card from "../components/Card.svelte";
 import Controller from "../components/Controller.svelte";
 import GameModel from "../model/GameModel.svelte";
 import type { Attachment } from "svelte/attachments";
-import ClockToken from "../components/ClockToken.svelte";
+import Token from "../components/Token.svelte";
 
 const game = new GameModel();
 game.deal();
@@ -20,8 +20,15 @@ game.deal();
           <Card color={color} pips={pips} />
         </Controller>
       {/each}
-      {#each {length: 3}, i}
-        <ClockToken index={i} />
+      {#each game.clockTokens as {matrix, onClick, tabindex, type}}
+        <Controller matrix={matrix} onclick={onClick} tabindex={tabindex}>
+          <Token type={type} />
+        </Controller>
+      {/each}
+      {#each game.fuseTokens as {matrix, onClick, tabindex, type}}
+        <Controller matrix={matrix} onclick={onClick} tabindex={tabindex}>
+        <Token type={type} />
+        </Controller>
       {/each}
     </Scene>
   </View>

@@ -1,6 +1,6 @@
 import { colors } from "@repo/shared";
 import CardModel from "./CardModel.svelte";
-import { mod } from "../utils";
+import TokenModel from "./TokenModel.svelte";
 
 type GameState = {
   playerCount?: number;
@@ -8,6 +8,8 @@ type GameState = {
   discard?: number[];
   hands?: number[][];
   player?: number;
+  clockTokens?: number;
+  fuseTokens?: number;
 };
 
 const pipDistribution = [3, 2, 2, 2, 1].reduce<number[]>((acc, amount, j) => {
@@ -22,11 +24,29 @@ export default class Hanabi {
   discard: number[];
   hands: number[][];
   player: number;
+  clockTokens: TokenModel[];
+  fuseTokens: TokenModel[];
 
   static makeDeck() {
     return colors.flatMap((color) =>
       pipDistribution.map((pips) => new CardModel(color, pips)),
     );
+  }
+
+  static makeClockTokens(count: number) {
+    return [...Array(count).keys()].map((i) => {
+      const token = new TokenModel("clock");
+      token.setClockPosition(i);
+      return token;
+    });
+  }
+
+  static makeFuseTokens(count: number) {
+    return [...Array(count).keys()].map((i) => {
+      const token = new TokenModel("fuse");
+      token.setFusePosition(i);
+      return token;
+    });
   }
 
   constructor({
@@ -35,6 +55,8 @@ export default class Hanabi {
     discard,
     hands,
     player,
+    clockTokens,
+    fuseTokens,
   }: GameState | undefined = {}) {
     this.cards = $state(Hanabi.makeDeck());
     this.playerCount = playerCount ?? Math.floor(Math.random() * 2 + 3.5);
@@ -44,6 +66,8 @@ export default class Hanabi {
       deck ?? this.cards.map((_, i) => i).sort(() => Math.random() - 0.5),
     );
     this.discard = $state(discard ?? []);
+    this.clockTokens = $state(Hanabi.makeClockTokens(clockTokens ?? 5));
+    this.fuseTokens = $state(Hanabi.makeFuseTokens(fuseTokens ?? 3));
 
     for (let i = 0; i < this.deck.length; i++) {
       const cardIndex = this.deck[i];
