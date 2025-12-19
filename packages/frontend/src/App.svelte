@@ -10,6 +10,6 @@ let url = "";
 <Router {url}>
   <Route path="/"><Landing /></Route>
   <Route path="/game"><Game /></Route>
-  <LightDarkToggle />
   <Header />
+  <LightDarkToggle />
 </Router>
