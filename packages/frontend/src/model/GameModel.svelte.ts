@@ -84,6 +84,19 @@ export default class Hanabi {
       }
     }
 
+    for (let i = 0; i < 5; i++) {
+      const cardIndex = this.deck.pop();
+
+      if (cardIndex === undefined) {
+        console.warn("Ran out of cards when dealing");
+        continue;
+      }
+
+      const card = this.cards[cardIndex];
+      await card.setDiscardPosition(this.discard.length);
+      this.discard.push(card);
+    }
+
     const setupTopCard = () => {
       const topCard = this.getDeckCard(-1);
       if (topCard) {

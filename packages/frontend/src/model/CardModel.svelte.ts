@@ -31,14 +31,14 @@ export default class CardModel {
   setDeckPosition(deckPosition: number) {
     this.matrix = new DOMMatrix()
       .rotate(0, 180, 0)
-      .translate(100, -380, -deckPosition);
+      .translate(90, -380, -deckPosition);
     this.tabindex = DECK_TABINDEX;
   }
 
   async setDiscardPosition(discardPosition: number) {
     this.matrix = new DOMMatrix()
-      .rotate(0, 180, 0)
-      .translate(-100, -380, -discardPosition);
+      .rotate(180, 180, 0)
+      .translate(-90, 380, discardPosition);
     this.tabindex = DISCARD_TABINDEX;
 
     await this.delay();
