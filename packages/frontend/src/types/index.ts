@@ -1,5 +1,11 @@
-import type GameModel from "../model/GameModel.svelte";
-export type Result<T extends any = void> = {
-  value: T | null;
-  error: string | null;
-};
+export type Result<T extends any = void> =
+  | {
+      value: T;
+      error: null;
+    }
+  | {
+      value: null;
+      error: string;
+    };
+
+export type GameRunnerSteps = (() => Promise<Result<void>>)[];

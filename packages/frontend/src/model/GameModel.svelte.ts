@@ -1,8 +1,9 @@
 import { colors } from "@repo/shared";
 import CardModel from "./CardModel.svelte";
 import TokenModel from "./TokenModel.svelte";
-import type { GameRunner, GameRunnerClass } from "./GameRunner";
-import Dealer from "./runners/Dealer";
+import type { GameRunnerSteps } from "./GameRunner";
+import { makeError, makeResult, range } from "../utils";
+import type { Result } from "../types";
 
 type GameState = {
   playerCount?: number;
@@ -30,7 +31,7 @@ export default class GameModel {
   }
 
   static makeClockTokens(count: number) {
-    return [...Array(count).keys()].map((i) => {
+    return range(count).map((i) => {
       const token = new TokenModel("clock");
       token.setClockPosition(i);
       return token;
@@ -38,7 +39,7 @@ export default class GameModel {
   }
 
   static makeFuseTokens(count: number) {
-    return [...Array(count).keys()].map((i) => {
+    return range(count).map((i) => {
       const token = new TokenModel("fuse");
       token.setFusePosition(i);
       return token;
@@ -114,32 +115,20 @@ export default class GameModel {
     });
   }
 
-  async execute(Runner: GameRunnerClass) {
-    const runner = new Runner(this);
-    const steps = runner.getSteps();
+  revert(_: unknown) {}
+
+  async execute(runner: (game: GameModel) => GameRunnerSteps) {
+    const state = {};
+    const steps = runner(this);
 
     for (const step of steps ?? []) {
       const { error } = await step();
 
       if (error) {
-        runner.revert();
+        this.revert(state);
         break;
       }
     }
-  }
-
-  setupHandCard(card: CardModel) {
-    card.onClick = async () => {
-      const { hand, handPosition } = this.getHandPosition(card);
-      if (handPosition === null) {
-        console.warn("Card is not in any hand????");
-        return;
-      }
-
-      this.getHandCard(hand, handPosition, "pop");
-      card.onClick = undefined;
-      await this.playOrDiscard(card);
-    };
   }
 
   async playOrDiscard(card: CardModel) {

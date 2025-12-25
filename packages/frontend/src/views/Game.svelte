@@ -6,10 +6,10 @@ import Controller from "../components/Controller.svelte";
 import GameModel from "../model/GameModel.svelte";
 import type { Attachment } from "svelte/attachments";
 import Token from "../components/Token.svelte";
-import Dealer from "../model/runners/Dealer";
+import deal from "../model/runners/deal";
 
 const game = new GameModel({ playerCount: 5 });
-game.execute(Dealer);
+game.execute(deal);
 
 // $inspect(game);
 </script>
