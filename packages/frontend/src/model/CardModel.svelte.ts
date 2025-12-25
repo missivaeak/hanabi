@@ -16,12 +16,14 @@ const OTHERS_HAND_TABINDEX_START = 7;
 export default class CardModel {
   pips: number;
   color: Color;
+  index: number;
   tabindex = $state(-1);
   matrix = $state(new DOMMatrix());
 
-  constructor(color: Color, pips: number) {
+  constructor(color: Color, pips: number, index: number) {
     this.pips = pips;
     this.color = color;
+    this.index = index;
   }
 
   async delay() {

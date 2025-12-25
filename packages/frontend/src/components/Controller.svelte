@@ -13,7 +13,17 @@ type Props = {
 let { children, matrix, onclick, tabindex }: Props = $props();
 </script>
 
-<button class="controller" style:transform={matrix?.toCSS()} onclick={onclick} onkeypress={onclick} tabindex={tabindex}>
+<button
+  class="controller"
+  style:transform={matrix?.toCSS()}
+  onclick={(event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onclick?.();
+  }}
+  onkeypress={onclick}
+  tabindex={tabindex}
+>
   <div class={onclick ? 'controller__hoverer' : ''}>
     {@render children?.()}
   </div>
