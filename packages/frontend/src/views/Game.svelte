@@ -4,11 +4,13 @@ import View from "../components/View.svelte";
 import Card from "../components/Card.svelte";
 import Controller from "../components/Controller.svelte";
 import GameModel from "../model/GameModel.svelte";
-import type { Attachment } from "svelte/attachments";
 import Token from "../components/Token.svelte";
 import deal from "../model/runners/deal";
+import Controls from "../components/Controls.svelte";
 
+// const game = new GameModel({ playerCount: 5, thisPlayerIndex: 0 });
 const game = new GameModel({ playerCount: 5 });
+// game.execute(debugDeal);
 game.execute(deal);
 
 // $inspect(game);
@@ -33,22 +35,15 @@ game.execute(deal);
         <Token type={type} />
         </Controller>
       {/each}
+      {#each game.controls as { items, matrix }, playerIndex}
+        <Controller matrix={matrix}>
+          <Controls items={items} isThisPlayer={playerIndex === game.thisPlayerIndex} />
+        </Controller>
+      {/each}
     </Scene>
   </View>
-<!-- <table><tbody> -->
-<!--   {#each {length: 5}, i} -->
-<!--     <tr> -->
-<!--       {#each {length: 10}, j} -->
-<!--         {@const cheat = game.cheat[i * 10 + j]} -->
-<!--         <td>  -->
-<!--           {cheat.index}{cheat.color}{cheat.pips}<br> -->
-<!--           {JSON.stringify(cheat.places)} -->
-<!--         </td> -->
-<!--       {/each} -->
-<!--     </tr> -->
-<!--   {/each} -->
-<!-- </tbody></table> -->
 </main>
+<!-- <CheatingTable game={game} /> -->
 
 <style>
 .game {

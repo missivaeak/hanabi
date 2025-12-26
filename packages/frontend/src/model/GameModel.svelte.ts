@@ -1,16 +1,16 @@
 import { colors } from "@repo/shared";
 import CardModel from "./CardModel.svelte";
 import TokenModel from "./TokenModel.svelte";
-import type { GameRunnerSteps } from "./GameRunner";
-import { makeError, makeResult, range } from "../utils";
-import type { Result } from "../types";
+import { delay, range } from "../utils";
+import type { GameRunnerSteps } from "../types";
+import ControlsModel from "./ControlsModel.svelte";
 
 type GameState = {
   playerCount?: number;
   deck?: number[];
   discard?: number[];
   hands?: number[][];
-  player?: number;
+  thisPlayerIndex?: number;
   clockTokens?: number;
   fuseTokens?: number;
   played?: number[];
@@ -52,9 +52,12 @@ export default class GameModel {
   discard: number[];
   hands: number[][];
   played: number[];
-  player: number;
+  thisPlayerIndex: number;
+  currentTurn = 0;
+  endTurn = Number.MAX_SAFE_INTEGER;
   clockTokens: TokenModel[];
   fuseTokens: TokenModel[];
+  controls: ControlsModel[];
   cheat: Record<string, unknown>[];
 
   constructor({
@@ -62,18 +65,25 @@ export default class GameModel {
     deck,
     discard,
     hands,
-    player,
+    thisPlayerIndex,
     clockTokens,
     fuseTokens,
     played,
   }: GameState | undefined = {}) {
     this.cards = GameModel.makeDeck();
     this.playerCount = playerCount ?? Math.floor(Math.random() * 2 + 3.5);
-    this.player = player ?? Math.floor(Math.random() * this.playerCount);
+    this.thisPlayerIndex =
+      thisPlayerIndex ?? Math.floor(Math.random() * this.playerCount);
     this.hands = $state([]);
+    this.controls = $state([]);
     for (let i = 0; i < this.playerCount; i++) {
       const hand = $state(hands ? hands[i] : []);
       this.hands[i] = hand;
+      this.controls[i] = new ControlsModel();
+      this.controls[i].moveToBasePosition(
+        this.getHandVisualIndex(i),
+        this.playerCount,
+      );
     }
     this.deck = $state(
       deck ?? this.cards.map((_, i) => i).sort(() => Math.random() - 0.5),
@@ -85,7 +95,7 @@ export default class GameModel {
 
     for (let i = 0; i < this.deck.length; i++) {
       const cardIndex = this.deck[i];
-      this.cards[cardIndex].setDeckPosition(i);
+      this.cards[cardIndex].moveToDeck(i);
     }
 
     this.cheat = $derived.by(() => {
@@ -134,12 +144,13 @@ export default class GameModel {
   async playOrDiscard(card: CardModel) {
     if (this.isCardPlayable(card)) {
       this.played.push(card.index);
-      await card.play();
+      card.moveToPlayed();
+      await delay();
       return;
     }
 
     this.discard.push(card.index);
-    await card.setDiscardPosition(this.discard.length);
+    card.moveToDiscard(this.discard.length);
   }
 
   setupTopDeckCard(card: CardModel) {
@@ -234,6 +245,14 @@ export default class GameModel {
     }
 
     return Boolean(!sameCard && oneLessPipsCard);
+  }
+
+  getHandVisualIndex(handIndex: number) {
+    if (handIndex === this.thisPlayerIndex) {
+      return -1;
+    }
+
+    return (handIndex - this.thisPlayerIndex).mod(this.playerCount) - 1;
   }
 
   onClick = async () => {};

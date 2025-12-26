@@ -34,3 +34,8 @@ export function makeError(error: string) {
     error,
   };
 }
+
+export const DEFAULT_DELAY = 100;
+export function delay(ms?: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms ?? DEFAULT_DELAY));
+}

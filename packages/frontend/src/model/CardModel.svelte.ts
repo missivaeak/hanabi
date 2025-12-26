@@ -1,5 +1,4 @@
 import { colors, type Color } from "@repo/shared";
-import { mod } from "../utils";
 
 const handOffsetTransforms = [
   new DOMMatrix().translate(0, 5, 0).rotate(8, 8, -9),
@@ -26,27 +25,21 @@ export default class CardModel {
     this.index = index;
   }
 
-  async delay() {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  setDeckPosition(deckPosition: number) {
+  moveToDeck(deckPosition: number) {
     this.matrix = new DOMMatrix()
       .rotate(0, 180, 0)
       .translate(90, -380, -deckPosition);
     this.tabindex = DECK_TABINDEX;
   }
 
-  async setDiscardPosition(discardPosition: number) {
+  moveToDiscard(discardPosition: number) {
     this.matrix = new DOMMatrix()
       .rotate(180, 180, 0)
       .translate(-90, 380, discardPosition);
     this.tabindex = DISCARD_TABINDEX;
-
-    await this.delay();
   }
 
-  async play() {
+  moveToPlayed() {
     const colorOffset = 180;
     const xOffset = colors.indexOf(this.color) * colorOffset;
     const pipOffset = this.pips * 50;
@@ -59,7 +52,7 @@ export default class CardModel {
     this.tabindex = -1;
   }
 
-  async setPlayerHandPosition(handPosition: number) {
+  moveToThisPlayer(handPosition: number) {
     const handOffsetAngles = [-15, -5, 5, 15];
     const offsetTransform = handOffsetTransforms[handPosition];
     const offsetRotation = handOffsetAngles[handPosition];
@@ -67,22 +60,16 @@ export default class CardModel {
     const radius = 650;
 
     this.matrix = new DOMMatrix()
-      .translate(0, 0, 122)
+      .translate(0, 0, 20)
       .rotate(-90, 0, degrees)
       .translate(0, 0, -radius)
       .rotate(0, 6, 0)
       .multiply(offsetTransform);
 
     this.tabindex = PLAYER_HAND_TABINDICES[handPosition];
-
-    await this.delay();
   }
 
-  async setOtherHandPosition(
-    handPosition: number,
-    hand: number,
-    playerCount: number,
-  ) {
+  moveToOtherPlayer(handPosition: number, hand: number, playerCount: number) {
     const handOffsetAngles = [-9, -3, 3, 9];
     const offsetTransform = handOffsetTransforms[handPosition];
     const offsetRotation = handOffsetAngles[handPosition];
@@ -97,8 +84,6 @@ export default class CardModel {
       .multiply(offsetTransform);
     this.tabindex =
       OTHERS_HAND_TABINDEX_START + hand * otherHandsCount + handPosition;
-
-    await this.delay();
   }
 
   onClick: (() => void) | undefined = $state(undefined);

@@ -22,7 +22,7 @@ const { children }: Props = $props();
   width: var(--scene-size);
   aspect-ratio: 1/1;
   border-radius: 50%;
-  transform: rotate3d(1, 0, 0, 68deg) scale3d(var(--scene-scale), var(--scene-scale), var(--scene-scale)) translate3d(0, 0, -140px);
+  transform: rotate3d(1, 0, 0, 75deg) scale3d(var(--scene-scale), var(--scene-scale), var(--scene-scale)) translate3d(0, 0, -140px);
   scale: min(1, calc(var(--view-width) / var(--scene-size)));
 }
 

@@ -1,15 +1,13 @@
-import type { GameRunnerSteps, Result } from "../../types";
-import { HAND_SIZE, makeError, makeResult, range } from "../../utils";
+import type { GameRunnerSteps } from "../../types";
+import { delay, HAND_SIZE, makeError, makeResult, range } from "../../utils";
 import type GameModel from "../GameModel.svelte";
-import handSetup from "./handSetup";
-import topDeckSetup from "./topDeckSetup";
+import setupPlayer from "./setupPlayer";
+import setupControls from "./setupControls";
 
-export default function (game: GameModel): GameRunnerSteps {
-  function dealAll() {
-    return range(game.playerCount).flatMap((handIndex) =>
-      range(HAND_SIZE).flatMap((_) => async () => await deal(handIndex)),
-    );
-  }
+export default function deal(game: GameModel): GameRunnerSteps {
+  const deals = range(game.playerCount).flatMap((handIndex) =>
+    range(HAND_SIZE).flatMap((_) => async () => await deal(handIndex)),
+  );
 
   async function deal(handIndex: number) {
     const cardIndex = game.deck.pop();
@@ -22,19 +20,20 @@ export default function (game: GameModel): GameRunnerSteps {
     const hand = game.hands[handIndex];
     hand.push(cardIndex);
 
-    if (handIndex === game.player) {
-      await card.setPlayerHandPosition(hand.length - 1);
+    if (handIndex === game.thisPlayerIndex) {
+      card.moveToThisPlayer(hand.length - 1);
     } else {
-      const otherIndex = (handIndex - game.player).mod(game.playerCount) - 1;
-      await card.setOtherHandPosition(
+      card.moveToOtherPlayer(
         hand.length - 1,
-        otherIndex,
+        game.getHandVisualIndex(handIndex),
         game.playerCount,
       );
     }
 
+    await delay();
+
     return makeResult(undefined);
   }
 
-  return [...dealAll(), ...handSetup(game), ...topDeckSetup(game)];
+  return [...deals, ...setupPlayer(game), ...setupControls(game)];
 }
