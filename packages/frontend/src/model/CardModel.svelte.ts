@@ -1,4 +1,10 @@
 import { colors, type Color } from "@repo/shared";
+import {
+  DECK_TABINDEX,
+  DISCARD_TABINDEX,
+  OTHERS_HAND_TABINDEX_START,
+  PLAYER_HAND_TABINDICES,
+} from "../utils";
 
 const handOffsetTransforms = [
   new DOMMatrix().translate(0, 5, 0).rotate(8, 8, -9),
@@ -6,11 +12,6 @@ const handOffsetTransforms = [
   new DOMMatrix().translate(0, -5, 0).rotate(8, 8, 3),
   new DOMMatrix().translate(0, 5, 0).rotate(8, 8, 9),
 ];
-
-const DECK_TABINDEX = 1;
-const DISCARD_TABINDEX = 2;
-const PLAYER_HAND_TABINDICES = [6, 5, 4, 3];
-const OTHERS_HAND_TABINDEX_START = 7;
 
 export default class CardModel {
   pips: number;

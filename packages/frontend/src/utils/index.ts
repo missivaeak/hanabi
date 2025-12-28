@@ -7,6 +7,12 @@ export function mod(a: number, b: number) {
 export const TAU = 6.283185;
 export const HAND_SIZE = 4;
 
+export const DECK_TABINDEX = 1;
+export const DISCARD_TABINDEX = 2;
+export const CONTROLS_TABINDEX_START = 3;
+export const PLAYER_HAND_TABINDICES = [21, 20, 19, 18];
+export const OTHERS_HAND_TABINDEX_START = 22;
+
 export function range(length: number): number[];
 export function range(start: number, length: number): number[];
 export function range(arg1: number, arg2?: number) {

@@ -10,7 +10,7 @@ let { color, pips }: Props = $props();
 </script>
 
 <div class={`card card--color-${color} card--count-${pips}`} >
-  {#each { length: pips }, pip}
+  {#each { length: pips }}
     <div class="card__pip-wrapper">
       <div class={`card__pip card__pip--color-${color}`}></div>
     </div>
