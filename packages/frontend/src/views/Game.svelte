@@ -7,6 +7,7 @@ import GameModel from "../model/GameModel.svelte";
 import Token from "../components/Token.svelte";
 import deal from "../model/runners/deal";
 import Controls from "../components/Controls.svelte";
+import Explosion from "../components/Explosion.svelte";
 
 // const game = new GameModel({ playerCount: 5, thisPlayerIndex: 0 });
 const game = new GameModel({ playerCount: 5 });
@@ -14,9 +15,9 @@ const game = new GameModel({ playerCount: 5 });
 game.execute(deal);
 
 // $inspect(game);
+let onClick = $state(() => {});
 </script>
 
-<!-- <button onclick={game.onClick}>up</button> -->
 <main class="game">
   <View>
     <Scene>
@@ -36,13 +37,13 @@ game.execute(deal);
         </Controller>
       {/each}
       {#each game.controls as { items, matrix }, playerIndex}
-        <Controller matrix={matrix}>
-          <Controls items={items} isThisPlayer={playerIndex === game.thisPlayerIndex} />
-        </Controller>
+          <Controls matrix={matrix} items={items} isThisPlayer={playerIndex === game.thisPlayerIndex} />
       {/each}
+      <Explosion matrix={new DOMMatrix()} callback={(animationStarter) => onClick = animationStarter} />
     </Scene>
   </View>
 </main>
+<button onclick={onClick}>explode</button>
 <!-- <CheatingTable game={game} /> -->
 
 <style>
