@@ -141,16 +141,24 @@ export default class GameModel {
     }
   }
 
-  async playOrDiscard(card: CardModel) {
+  playOrDiscardCard(card: CardModel) {
     if (this.isCardPlayable(card)) {
       this.played.push(card.index);
       card.moveToPlayed();
-      await delay();
       return;
     }
 
+    this.fuseTokens.length -= 1;
     this.discard.push(card.index);
     card.moveToDiscard(this.discard.length);
+  }
+
+  async discardCard(card: CardModel) {
+    this.discard.push(card.index);
+    card.moveToDiscard(this.discard.length);
+    const token = new TokenModel("clock");
+    this.clockTokens.push(token);
+    setTimeout(() => token.setClockPosition(this.clockTokens.length), 0);
   }
 
   setupTopDeckCard(card: CardModel) {
@@ -159,7 +167,7 @@ export default class GameModel {
       this.deck.pop();
       const nextCard = this.getDeckCard(-1);
       if (nextCard) this.setupTopDeckCard(nextCard);
-      await this.playOrDiscard(card);
+      this.playOrDiscardCard(card);
     };
   }
 
@@ -227,6 +235,16 @@ export default class GameModel {
     const card = this.cards[cardIndex];
 
     return card ? card : null;
+  }
+
+  popCard(card: CardModel) {
+    this.deck.filter((cardIndex) => cardIndex !== card.index);
+    this.discard.filter((cardIndex) => cardIndex !== card.index);
+    this.played.filter((cardIndex) => cardIndex !== card.index);
+
+    for (const hand of this.hands) {
+      hand.filter((cardIndex) => cardIndex !== card.index);
+    }
   }
 
   isCardPlayable(card: CardModel) {

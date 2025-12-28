@@ -1,15 +1,49 @@
 import type { GameRunnerSteps } from "../../types";
-import { makeResult } from "../../utils";
+import { delay, makeResult } from "../../utils";
 import type ControlsModel from "../ControlsModel.svelte";
 import type GameModel from "../GameModel.svelte";
 
 export default function setupControls(game: GameModel): GameRunnerSteps {
   function setupThisPlayerControls(controls: ControlsModel) {
-    controls.items.push({
-      key: "test",
-      onClick: () => console.log("aotnehatoeh"),
-      text: "Press me",
-    });
+    const thisHand = game.hands[game.thisPlayerIndex];
+    const cards = thisHand.map((index) => game.cards[index]);
+
+    for (const card of cards) {
+      card.onClick = () => {
+        const key = `play-${card.index}`;
+
+        if (controls.items[0]?.key === key) {
+          controls.items = [];
+          return;
+        }
+
+        controls.moveToAboveCard(card.matrix);
+        controls.items = [
+          {
+            key,
+            onClick: () => {
+              game.popCard(card);
+              game.playOrDiscardCard(card);
+              controls.items = [];
+              card.onClick = undefined;
+            },
+            text: "Play card",
+            icon: "play",
+          },
+          {
+            key: `discard-${card.index}`,
+            onClick: () => {
+              game.popCard(card);
+              game.discardCard(card);
+              controls.items = [];
+              card.onClick = undefined;
+            },
+            text: "Discard",
+            icon: "discard",
+          },
+        ];
+      };
+    }
     return makeResult(undefined);
   }
 
@@ -17,6 +51,7 @@ export default function setupControls(game: GameModel): GameRunnerSteps {
     controls.items.push({
       key: "clue",
       onClick: () => console.log("aotnehatoeh"),
+      text: "Give clue",
       icon: "magnifying-glass",
     });
     return makeResult(undefined);
