@@ -1,8 +1,8 @@
 import type { GameRunnerSteps } from "../../types";
 import { delay, HAND_SIZE, makeError, makeResult, range } from "../../utils";
 import type GameModel from "../GameModel.svelte";
-import setupPlayer from "./setupPlayer";
-import setupControls from "./setupControls";
+import setupPlayer from "./setupPlayer.svelte";
+import setupControls from "./setupControls.svelte";
 
 export default function deal(game: GameModel): GameRunnerSteps {
   const deals = range(game.playerCount).flatMap((handIndex) =>

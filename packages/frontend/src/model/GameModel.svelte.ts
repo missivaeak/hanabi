@@ -1,10 +1,11 @@
 import { colors } from "@repo/shared";
 import CardModel from "./CardModel.svelte";
 import TokenModel from "./TokenModel.svelte";
-import { delay, range } from "../utils";
+import { range } from "../utils";
 import type { GameRunnerSteps } from "../types";
 import ControlsModel from "./ControlsModel.svelte";
 import type { UiSignal } from "../types/UiSignal";
+import makePlayOrDiscard from "./runners/playOrDiscard.svelte";
 
 type GameState = {
   playerCount?: number;
@@ -106,12 +107,12 @@ export default class GameModel {
         const inPlay = this.played.indexOf(card.index);
         const inDeck = this.deck.indexOf(card.index);
         const inDiscard = this.discard.indexOf(card.index);
-        const { hand, handPosition } = this.getHandPosition(card);
+        const { handIndex, handPosition } = this.getHandPosition(card);
         const places = [
           inPlay === -1 ? null : `played${inPlay}`,
           inDeck === -1 ? null : `deck${inDeck}`,
           inDiscard === -1 ? null : `discard${inDiscard}`,
-          hand === null ? null : `hand${hand}${handPosition}`,
+          handIndex === null ? null : `hand${handIndex}${handPosition}`,
         ].filter(Boolean);
 
         record[card.index] = {
@@ -136,26 +137,32 @@ export default class GameModel {
       const { error } = await step();
 
       if (error) {
+        console.warn(error);
         this.revert(state);
         break;
       }
     }
   }
 
-  playOrDiscardCard(card: CardModel) {
-    if (this.isCardPlayable(card)) {
-      this.played.push(card.index);
-      card.moveToPlayed();
-      return;
-    }
-
-    this.signal({ type: 'explosion', matrix: this.fuseTokens[this.fuseTokens.length - 1].matrix.copy() })
-    this.fuseTokens.length -= 1;
-    this.discard.push(card.index);
-    card.moveToDiscard(this.discard.length);
-  }
+  // playOrDiscardCard(card: CardModel) {
+  //   console.log($state.snapshot(this.hands[0]));
+  //   this.popCard(card);
+  //   console.log($state.snapshot(this.hands[0]));
+  //
+  //   if (this.isCardPlayable(card)) {
+  //     this.played.push(card.index);
+  //     card.moveToPlayed();
+  //     return
+  //   }
+  //
+  //   this.signal({ type: 'explosion', matrix: this.fuseTokens[this.fuseTokens.length - 1].matrix.copy() })
+  //   this.fuseTokens.length -= 1;
+  //   this.discard.push(card.index);
+  //   card.moveToDiscard(this.discard.length);
+  // }
 
   async discardCard(card: CardModel) {
+    this.popCard(card);
     this.discard.push(card.index);
     card.moveToDiscard(this.discard.length);
     const token = new TokenModel("clock");
@@ -172,7 +179,7 @@ export default class GameModel {
       this.deck.pop();
       const nextCard = this.getDeckCard(-1);
       if (nextCard) this.setupTopDeckCard(nextCard);
-      this.playOrDiscardCard(card);
+      this.execute(makePlayOrDiscard(card));
     };
   }
 
@@ -199,7 +206,7 @@ export default class GameModel {
       for (let j = 0; j < this.hands[i].length; j++) {
         if (this.hands[i][j] === card.index) {
           return {
-            hand: i,
+            handIndex: i,
             handPosition: j,
           };
         }
@@ -207,7 +214,7 @@ export default class GameModel {
     }
 
     return {
-      hand: null,
+      handIndex: null,
       handPosition: null,
     };
   }
@@ -243,12 +250,12 @@ export default class GameModel {
   }
 
   popCard(card: CardModel) {
-    this.deck.filter((cardIndex) => cardIndex !== card.index);
-    this.discard.filter((cardIndex) => cardIndex !== card.index);
-    this.played.filter((cardIndex) => cardIndex !== card.index);
+    this.deck = this.deck.filter((cardIndex) => cardIndex !== card.index);
+    this.discard = this.discard.filter((cardIndex) => cardIndex !== card.index);
+    this.played = this.played.filter((cardIndex) => cardIndex !== card.index);
 
-    for (const hand of this.hands) {
-      hand.filter((cardIndex) => cardIndex !== card.index);
+    for (let i = 0; i < this.hands.length; i++) {
+      this.hands[i] = this.hands[i].filter((cardIndex) => cardIndex !== card.index);
     }
   }
 
@@ -279,5 +286,5 @@ export default class GameModel {
   }
 
   onClick = async () => { };
-  signal = (uiSignal: UiSignal) => { };
+  signal = (_: UiSignal) => { };
 }

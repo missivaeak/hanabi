@@ -5,14 +5,14 @@ import Card from "../components/Card.svelte";
 import Controller from "../components/Controller.svelte";
 import GameModel from "../model/GameModel.svelte";
 import Token from "../components/Token.svelte";
-import deal from "../model/runners/deal";
+import deal from "../model/runners/deal.svelte";
 import Controls from "../components/Controls.svelte";
 import Explosion from "../components/Explosion.svelte";
-	import { SvelteSet } from 'svelte/reactivity';
+import { SvelteSet } from 'svelte/reactivity';
 
 
-// const game = new GameModel({ playerCount: 5, thisPlayerIndex: 0 });
-const game = new GameModel({ playerCount: 5 });
+const game = new GameModel({ playerCount: 5, thisPlayerIndex: 0 });
+// const game = new GameModel({ playerCount: 5 });
 let explosions = new SvelteSet<UiSignal<'explosion'>>();
 let toasts = new SvelteSet<UiSignal<'toast'>>();
 
