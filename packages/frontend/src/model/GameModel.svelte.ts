@@ -4,6 +4,7 @@ import TokenModel from "./TokenModel.svelte";
 import { delay, range } from "../utils";
 import type { GameRunnerSteps } from "../types";
 import ControlsModel from "./ControlsModel.svelte";
+import type { UiSignal } from "../types/UiSignal";
 
 type GameState = {
   playerCount?: number;
@@ -125,7 +126,7 @@ export default class GameModel {
     });
   }
 
-  revert(_: unknown) {}
+  revert(_: unknown) { }
 
   async execute(runner: (game: GameModel) => GameRunnerSteps) {
     const state = {};
@@ -148,6 +149,7 @@ export default class GameModel {
       return;
     }
 
+    this.signal({ type: 'explosion', matrix: this.fuseTokens[this.fuseTokens.length - 1].matrix.copy() })
     this.fuseTokens.length -= 1;
     this.discard.push(card.index);
     card.moveToDiscard(this.discard.length);
@@ -158,7 +160,10 @@ export default class GameModel {
     card.moveToDiscard(this.discard.length);
     const token = new TokenModel("clock");
     this.clockTokens.push(token);
-    setTimeout(() => token.setClockPosition(this.clockTokens.length), 0);
+    setTimeout(() => {
+      token.setClockPosition(this.clockTokens.length)
+      this.signal({ type: 'explosion', matrix: token.matrix.copy() })
+    }, 0);
   }
 
   setupTopDeckCard(card: CardModel) {
@@ -273,5 +278,6 @@ export default class GameModel {
     return (handIndex - this.thisPlayerIndex).mod(this.playerCount) - 1;
   }
 
-  onClick = async () => {};
+  onClick = async () => { };
+  signal = (uiSignal: UiSignal) => { };
 }

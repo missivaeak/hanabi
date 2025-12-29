@@ -1,22 +1,24 @@
 <script lang="ts">
 type Props = {
   matrix: DOMMatrix;
-  callback: (animationStarter: () => void) => void;
 };
 
-const { matrix, callback }: Props = $props();
+const { matrix }: Props = $props();
+// const matrix = new DOMMatrix();
 
-const otherMatrix = new DOMMatrix().translate(0, 0, 50);
 let started = $state(false);
 
-callback(() => (started = true));
 </script>
 
-<div class="explosion" style:transform={otherMatrix.rotate(-75, 0, 0).toCSS()}>
-  <div class={`explosion__particle ${started ? 'explosion__particle--started' : ''}`}></div>
-  <div class={`explosion__particle ${started ? 'explosion__particle--started' : ''}`}></div>
-  <div class={`explosion__particle ${started ? 'explosion__particle--started' : ''}`}></div>
-  <div class={`explosion__particle ${started ? 'explosion__particle--started' : ''}`}></div>
+<div class={`explosion ${started ? 'explosion--started' : ''}`} style:transform={matrix.rotate(-75, 0, 0).toCSS()}>
+  <div class="explosion__particle"></div>
+  <div class="explosion__particle"></div>
+  <div class="explosion__particle"></div>
+  <div class="explosion__particle"></div>
+  <div class="explosion__particle"></div>
+  <div class="explosion__particle"></div>
+  <div class="explosion__particle"></div>
+  <div class="explosion__particle"></div>
 </div>
 
 <style>
@@ -28,12 +30,12 @@ callback(() => (started = true));
 }
 
 .explosion__particle:nth-child(1) {
-  --target-x: 200px;
+  --target-x: 100px;
   --target-y: -40px;
 }
 
 .explosion__particle:nth-child(2) {
-  --target-x: -200px;
+  --target-x: -100px;
   --target-y: -40px;
 }
 
@@ -47,10 +49,31 @@ callback(() => (started = true));
   --target-y: -70px;
 }
 
+.explosion__particle:nth-child(5) {
+  --target-x: -10px;
+  --target-y: -20px;
+}
+
+.explosion__particle:nth-child(6) {
+  --target-x: 10px;
+  --target-y: -5px;
+}
+
+.explosion__particle:nth-child(7) {
+  --target-x: -20px;
+  --target-y: -5px;
+}
+
+.explosion__particle:nth-child(8) {
+  --target-x: 15px;
+  --target-y: -70px;
+}
+
+
 .explosion__particle {
   grid-row: 1;
   grid-column: 1;
-  animation: fly-up 0.5s infinite cubic-bezier(0, 0.5, 0.5, 1) paused alternate;
+  animation: 0.5s cubic-bezier(0, 0.5, 0.5, 1) 0s 2 alternate both running fly-up;
 }
 
 .explosion__particle::after {
@@ -61,11 +84,11 @@ callback(() => (started = true));
   border-radius: 50%;
   background-color: #eeeeee;
   animation: 
-    fly-away 1s infinite cubic-bezier(0, 0.7, 1, 1) paused,
-    disappear 1s infinite linear paused;
+    1s cubic-bezier(0, 0.7, 1, 1) 0s 1 normal both running fly-away,
+    1s linear 0s 1 normal both running disappear;
 }
 
-.explosion__particle--started, .explosion__particle--started::after {
+.explosion--started * {
   animation-play-state: running;
 }
 

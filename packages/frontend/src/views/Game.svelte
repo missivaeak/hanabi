@@ -8,14 +8,35 @@ import Token from "../components/Token.svelte";
 import deal from "../model/runners/deal";
 import Controls from "../components/Controls.svelte";
 import Explosion from "../components/Explosion.svelte";
+	import { SvelteSet } from 'svelte/reactivity';
+
 
 // const game = new GameModel({ playerCount: 5, thisPlayerIndex: 0 });
 const game = new GameModel({ playerCount: 5 });
+let explosions = new SvelteSet<UiSignal<'explosion'>>();
+let toasts = new SvelteSet<UiSignal<'toast'>>();
+
+game.signal = (uiSignal) => {
+  switch (uiSignal.type) {
+    case "toast": 
+      toasts.add(uiSignal);
+      setTimeout(() => {
+        toasts.delete(uiSignal);
+      }, 5000);
+      break;
+    case "explosion":
+      explosions.add(uiSignal);
+      setTimeout(() => {
+        explosions.delete(uiSignal);
+      }, 1000);
+      break;
+    default:
+      console.error("Unknown UI Signal type", uiSignal.type);
+  }
+};
+
 // game.execute(debugDeal);
 game.execute(deal);
-
-// $inspect(game);
-let onClick = $state(() => {});
 </script>
 
 <main class="game">
@@ -39,11 +60,12 @@ let onClick = $state(() => {});
       {#each game.controls as { items, matrix }, playerIndex}
           <Controls matrix={matrix} items={items} isThisPlayer={playerIndex === game.thisPlayerIndex} />
       {/each}
-      <Explosion matrix={new DOMMatrix()} callback={(animationStarter) => onClick = animationStarter} />
+      {#each explosions as { matrix }}
+        <Explosion matrix={matrix} />
+      {/each}
     </Scene>
   </View>
 </main>
-<button onclick={onClick}>explode</button>
 <!-- <CheatingTable game={game} /> -->
 
 <style>
