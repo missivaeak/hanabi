@@ -2,6 +2,7 @@ import type { GameRunnerSteps } from "../../types";
 import { makeResult } from "../../utils";
 import type ControlsModel from "../ControlsModel.svelte";
 import type GameModel from "../GameModel.svelte";
+import makeDiscardCard from "./makeDiscardCard.svelte";
 import makePlayCard from "./makePlayCard.svelte";
 
 export default function setupControls(game: GameModel): GameRunnerSteps {
@@ -25,7 +26,7 @@ export default function setupControls(game: GameModel): GameRunnerSteps {
             onClick: () => {
               controls.items = [];
               card.onClick = undefined;
-              game.execute(makePlayCard(card))
+              game.execute(makePlayCard(card));
             },
             text: "Play card",
             icon: "play",
@@ -33,10 +34,9 @@ export default function setupControls(game: GameModel): GameRunnerSteps {
           {
             key: `discard-${card.index}`,
             onClick: () => {
-              game.popCard(card);
-              game.discardCard(card);
               controls.items = [];
               card.onClick = undefined;
+              game.execute(makeDiscardCard(card));
             },
             text: "Discard",
             icon: "discard",

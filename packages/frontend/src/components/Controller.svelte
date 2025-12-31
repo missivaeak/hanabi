@@ -44,6 +44,10 @@ let { children, matrix, onclick, tabindex }: Props = $props();
   box-shadow: unset;
 }
 
+.controller__hoverer {
+  transition: scale 0.1s linear;
+}
+
 .controller:hover .controller__hoverer,
 .controller:focus .controller__hoverer {
   scale: 1.1;

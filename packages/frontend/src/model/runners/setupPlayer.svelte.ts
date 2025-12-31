@@ -1,7 +1,8 @@
+import type { GameRunnerSteps } from "../../types";
 import { makeResult } from "../../utils";
 import type GameModel from "../GameModel.svelte";
 
-export default function setupPlayer(game: GameModel) {
+export default function setupPlayer(game: GameModel): GameRunnerSteps {
   function setupThisPlayer() {
     return makeResult(undefined);
   }

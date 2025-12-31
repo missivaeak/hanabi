@@ -8,17 +8,17 @@ import Token from "../components/Token.svelte";
 import deal from "../model/runners/deal.svelte";
 import Controls from "../components/Controls.svelte";
 import Explosion from "../components/Explosion.svelte";
-import { SvelteSet } from 'svelte/reactivity';
-
+import { SvelteSet } from "svelte/reactivity";
+import type { UiSignal } from "../types/UiSignal";
 
 const game = new GameModel({ playerCount: 5, thisPlayerIndex: 0 });
 // const game = new GameModel({ playerCount: 5 });
-let explosions = new SvelteSet<UiSignal<'explosion'>>();
-let toasts = new SvelteSet<UiSignal<'toast'>>();
+let explosions = new SvelteSet<UiSignal<"explosion">>();
+let toasts = new SvelteSet<UiSignal<"toast">>();
 
 game.signal = (uiSignal) => {
   switch (uiSignal.type) {
-    case "toast": 
+    case "toast":
       toasts.add(uiSignal);
       setTimeout(() => {
         toasts.delete(uiSignal);
@@ -31,14 +31,17 @@ game.signal = (uiSignal) => {
       }, 1000);
       break;
     default:
-      console.error("Unknown UI Signal type", uiSignal.type);
+      console.error("Unknown UI Signal type");
   }
 };
 
 // game.execute(debugDeal);
 game.execute(deal);
+
+// $inspect(game);
 </script>
 
+<!-- <button onclick={game.onClick}>up</button> -->
 <main class="game">
   <View>
     <Scene>
@@ -54,7 +57,7 @@ game.execute(deal);
       {/each}
       {#each game.fuseTokens as { matrix, onClick, tabindex, type }}
         <Controller matrix={matrix} onclick={onClick} tabindex={tabindex}>
-        <Token type={type} />
+          <Token type={type} />
         </Controller>
       {/each}
       {#each game.controls as { items, matrix }, playerIndex}
@@ -66,6 +69,7 @@ game.execute(deal);
     </Scene>
   </View>
 </main>
+
 <!-- <CheatingTable game={game} /> -->
 
 <style>

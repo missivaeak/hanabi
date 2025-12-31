@@ -1,14 +1,10 @@
-import type { GameRunnerSteps } from "../../types";
+import type { GameRunnerSteps, Result } from "../../types";
 import { delay, HAND_SIZE, makeError, makeResult, range } from "../../utils";
 import type GameModel from "../GameModel.svelte";
 import setupPlayer from "./setupPlayer.svelte";
 import setupControls from "./setupControls.svelte";
 
 export default function deal(game: GameModel): GameRunnerSteps {
-  const deals = range(game.playerCount).flatMap((handIndex) =>
-    range(HAND_SIZE).flatMap((_) => async () => await deal(handIndex)),
-  );
-
   async function deal(handIndex: number) {
     const cardIndex = game.deck.pop();
 
@@ -35,5 +31,11 @@ export default function deal(game: GameModel): GameRunnerSteps {
     return makeResult(undefined);
   }
 
-  return [...deals, ...setupPlayer(game), ...setupControls(game)];
+  return [
+    ...range(game.playerCount).flatMap((handIndex) =>
+      range(HAND_SIZE).flatMap((_) => async () => deal(handIndex)),
+    ),
+    ...setupPlayer(game),
+    ...setupControls(game),
+  ];
 }

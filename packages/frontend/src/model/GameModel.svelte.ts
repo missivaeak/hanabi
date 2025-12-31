@@ -5,7 +5,6 @@ import { range } from "../utils";
 import type { GameRunnerSteps } from "../types";
 import ControlsModel from "./ControlsModel.svelte";
 import type { UiSignal } from "../types/UiSignal";
-import makePlayOrDiscard from "./runners/playOrDiscard.svelte";
 
 type GameState = {
   playerCount?: number;
@@ -88,7 +87,8 @@ export default class GameModel {
       );
     }
     this.deck = $state(
-      deck ?? this.cards.map((_, i) => i).sort(() => Math.random() - 0.5),
+      deck ??
+        this.cards.map((card) => card.index).sort(() => Math.random() - 0.5),
     );
     this.discard = $state(discard ?? []);
     this.clockTokens = $state(GameModel.makeClockTokens(clockTokens ?? 5));
@@ -127,7 +127,7 @@ export default class GameModel {
     });
   }
 
-  revert(_: unknown) { }
+  revert(_: unknown) {}
 
   async execute(runner: (game: GameModel) => GameRunnerSteps) {
     const state = {};
@@ -160,34 +160,32 @@ export default class GameModel {
   //   this.discard.push(card.index);
   //   card.moveToDiscard(this.discard.length);
   // }
-
-  async discardCard(card: CardModel) {
-    this.popCard(card);
-    this.discard.push(card.index);
-    card.moveToDiscard(this.discard.length);
-    const token = new TokenModel("clock");
-    this.clockTokens.push(token);
-    setTimeout(() => {
-      token.setClockPosition(this.clockTokens.length)
-      this.signal({ type: 'explosion', matrix: token.matrix.copy() })
-    }, 0);
-  }
-
-  setupTopDeckCard(card: CardModel) {
-    card.onClick = async () => {
-      card.onClick = undefined;
-      this.deck.pop();
-      const nextCard = this.getDeckCard(-1);
-      if (nextCard) this.setupTopDeckCard(nextCard);
-      this.execute(makePlayOrDiscard(card));
-    };
-  }
-
-  setupTopDiscardCard(card: CardModel) {
-    card.onClick = () => {
-      console.log("clicks discard");
-    };
-  }
+  //
+  // async discardCard(card: CardModel) {
+  //   this.popCard(card);
+  //   this.discard.push(card.index);
+  //   card.moveToDiscard(this.discard.length);
+  //   const token = new TokenModel("clock");
+  //   this.clockTokens.push(token);
+  //   token.setClockPosition(this.clockTokens.length);
+  //   this.signal({ type: "explosion", matrix: token.matrix.copy() });
+  // }
+  //
+  // setupTopDeckCard(card: CardModel) {
+  //   card.onClick = async () => {
+  //     card.onClick = undefined;
+  //     this.deck.pop();
+  //     const nextCard = this.getDeckCard(-1);
+  //     if (nextCard) this.setupTopDeckCard(nextCard);
+  //     this.execute(makePlayOrDiscard(card));
+  //   };
+  // }
+  //
+  // setupTopDiscardCard(card: CardModel) {
+  //   card.onClick = () => {
+  //     console.log("clicks discard");
+  //   };
+  // }
 
   getHandCard(handIndex: number, handPosition: number, pop?: "pop") {
     const cardIndex = this.hands[handIndex]?.[handPosition] ?? -1;
@@ -225,7 +223,7 @@ export default class GameModel {
     const cardIndex = this.deck[deckIndex] ?? -1;
 
     if (pop) {
-      this.deck.splice(deckPosition, 1);
+      this.deck.splice(deckIndex, 1);
     }
 
     const card = this.cards[cardIndex];
@@ -241,7 +239,7 @@ export default class GameModel {
     const cardIndex = this.discard[discardIndex] ?? -1;
 
     if (pop) {
-      this.discard.splice(discardPosition, 1);
+      this.discard.splice(discardIndex, 1);
     }
 
     const card = this.cards[cardIndex];
@@ -255,7 +253,9 @@ export default class GameModel {
     this.played = this.played.filter((cardIndex) => cardIndex !== card.index);
 
     for (let i = 0; i < this.hands.length; i++) {
-      this.hands[i] = this.hands[i].filter((cardIndex) => cardIndex !== card.index);
+      this.hands[i] = this.hands[i].filter(
+        (cardIndex) => cardIndex !== card.index,
+      );
     }
   }
 
@@ -285,6 +285,6 @@ export default class GameModel {
     return (handIndex - this.thisPlayerIndex).mod(this.playerCount) - 1;
   }
 
-  onClick = async () => { };
-  signal = (_: UiSignal) => { };
+  onClick = async () => {};
+  signal = (_: UiSignal) => {};
 }
