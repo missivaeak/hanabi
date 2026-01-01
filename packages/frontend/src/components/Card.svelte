@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type Color } from "@repo/shared";
+import { colors, pipCounts, type Color } from "@repo/shared";
 
 type Props = {
   color: Color;
@@ -147,5 +147,4 @@ let { color, pips }: Props = $props();
   aspect-ratio: 1 / 1;
   border-radius: 50%;
 }
-
 </style>

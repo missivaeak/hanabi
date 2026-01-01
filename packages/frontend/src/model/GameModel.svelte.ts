@@ -88,7 +88,7 @@ export default class GameModel {
     }
     this.deck = $state(
       deck ??
-        this.cards.map((card) => card.index).sort(() => Math.random() - 0.5),
+      this.cards.map((card) => card.index).sort(() => Math.random() - 0.5),
     );
     this.discard = $state(discard ?? []);
     this.clockTokens = $state(GameModel.makeClockTokens(clockTokens ?? 5));
@@ -127,7 +127,7 @@ export default class GameModel {
     });
   }
 
-  revert(_: unknown) {}
+  revert(_: unknown) { }
 
   async execute(runner: (game: GameModel) => GameRunnerSteps) {
     const state = {};
@@ -285,6 +285,10 @@ export default class GameModel {
     return (handIndex - this.thisPlayerIndex).mod(this.playerCount) - 1;
   }
 
-  onClick = async () => {};
-  signal = (_: UiSignal) => {};
+  isInThisPlayerHand(cardIndex: number) {
+    return this.hands[this.thisPlayerIndex].indexOf(cardIndex) >= 0;
+  }
+
+  onClick = async () => { };
+  signal = (_: UiSignal) => { };
 }

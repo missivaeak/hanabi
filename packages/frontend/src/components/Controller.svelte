@@ -45,6 +45,8 @@ let { children, matrix, onclick, tabindex }: Props = $props();
 }
 
 .controller__hoverer {
+  display: grid;
+  place-items: center;
   transition: scale 0.1s linear;
 }
 

@@ -10,8 +10,27 @@ import Controls from "../components/Controls.svelte";
 import Explosion from "../components/Explosion.svelte";
 import { SvelteSet } from "svelte/reactivity";
 import type { UiSignal } from "../types/UiSignal";
+import knowledgeStore from "../store/knowledgeStore.svelte";
+import Knowledge from "../components/Knowledge.svelte";
+import { range } from '../utils/index.ts';
 
 const game = new GameModel({ playerCount: 5, thisPlayerIndex: 0 });
+knowledgeStore.set(range(game.cards.length).map(_ => ({
+  color: {
+    a: true,
+    b: true,
+    c: true,
+    d: true,
+    e: true,
+  },
+  pips: {
+    1: true,
+    2: true,
+    3: true,
+    4: true,
+    5: true,
+  },
+})));
 // const game = new GameModel({ playerCount: 5 });
 let explosions = new SvelteSet<UiSignal<"explosion">>();
 let toasts = new SvelteSet<UiSignal<"toast">>();
@@ -45,9 +64,12 @@ game.execute(deal);
 <main class="game">
   <View>
     <Scene>
-      {#each game.cards as { color, pips, onClick, matrix, tabindex }}
+      {#each game.cards as { color, pips, onClick, matrix, tabindex, index }}
         <Controller matrix={matrix} onclick={onClick} tabindex={tabindex}>
           <Card color={color} pips={pips} />
+          {#if game.isInThisPlayerHand(index)}
+            <Knowledge index={index} interactable={true} position={"thisPlayer"} />
+          {/if}
         </Controller>
       {/each}
       {#each game.clockTokens as { matrix, onClick, tabindex, type }}

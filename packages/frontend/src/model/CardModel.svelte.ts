@@ -1,4 +1,4 @@
-import { colors, type Color } from "@repo/shared";
+import { colors, type Color, type PipCount } from "@repo/shared";
 import {
   DECK_TABINDEX,
   DISCARD_TABINDEX,
@@ -13,17 +13,50 @@ const handOffsetTransforms = [
   new DOMMatrix().translate(0, 5, 0).rotate(8, 8, 9),
 ];
 
+const baseKnowledge: CardKnowledge = {
+  color: {
+    a: true,
+    b: true,
+    c: true,
+    d: true,
+    e: true,
+  },
+  pips: {
+    1: true,
+    2: true,
+    3: true,
+    4: true,
+    5: true,
+  },
+};
+
+export type CardKnowledge = {
+  color: {
+    [K in Color]: boolean;
+  };
+  pips: {
+    [K in PipCount]: boolean;
+  };
+};
+
 export default class CardModel {
   pips: number;
   color: Color;
   index: number;
+  knowledge: CardKnowledge;
   tabindex = $state(-1);
   matrix = $state(new DOMMatrix());
 
-  constructor(color: Color, pips: number, index: number) {
+  constructor(
+    color: Color,
+    pips: number,
+    index: number,
+    cardKnowledge?: CardKnowledge,
+  ) {
     this.pips = pips;
     this.color = color;
     this.index = index;
+    this.knowledge = $state(cardKnowledge ?? baseKnowledge);
   }
 
   moveToDeck(deckPosition: number) {
@@ -54,8 +87,7 @@ export default class CardModel {
   }
 
   moveToThisPlayer(handPosition: number) {
-    const handOffsetAngles = [-15, -5, 5, 15];
-    const offsetTransform = handOffsetTransforms[handPosition];
+    const handOffsetAngles = [-22.5, -7.5, 7.5, 22.5];
     const offsetRotation = handOffsetAngles[handPosition];
     const degrees = 180 + offsetRotation;
     const radius = 650;
@@ -63,9 +95,7 @@ export default class CardModel {
     this.matrix = new DOMMatrix()
       .translate(0, 0, 20)
       .rotate(-90, 0, degrees)
-      .translate(0, 0, -radius)
-      .rotate(0, 6, 0)
-      .multiply(offsetTransform);
+      .translate(0, 0, -radius);
 
     this.tabindex = PLAYER_HAND_TABINDICES[handPosition];
   }

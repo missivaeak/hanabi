@@ -4,6 +4,7 @@ import Landing from "./views/Landing.svelte";
 import LightDarkToggle from "./components/LightDarkToggle.svelte";
 import Game from "./views/Game.svelte";
 import Header from "./components/Header.svelte";
+import './store/knowledgeStore.svelte';
 let url = "";
 </script>
 
