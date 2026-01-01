@@ -45,9 +45,9 @@ game.execute(deal);
 <main class="game">
   <View>
     <Scene>
-      {#each game.cards as { color, pips, onClick, matrix, tabindex }}
+      {#each game.cards as { color, pips, onClick, matrix, tabindex, knowledge }}
         <Controller matrix={matrix} onclick={onClick} tabindex={tabindex}>
-          <Card color={color} pips={pips} />
+          <Card color={color} pips={pips} knowledge={knowledge}/>
         </Controller>
       {/each}
       {#each game.clockTokens as { matrix, onClick, tabindex, type }}
