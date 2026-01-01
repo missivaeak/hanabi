@@ -3,7 +3,7 @@ import { Link } from "svelte5-router";
 </script>
 
 <main class="landing">
-  <Link to="game">Play</Link>
+  <Link class="landing__link" to="game">Play</Link>
 </main>
 
 <style>
@@ -11,5 +11,6 @@ import { Link } from "svelte5-router";
   flex-grow: 1;
   display: grid;
   place-items: center;
+  font-size: 2em;
 }
 </style>

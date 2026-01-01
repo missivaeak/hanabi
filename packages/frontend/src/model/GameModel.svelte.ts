@@ -1,13 +1,20 @@
 import { colors } from "@repo/shared";
 import CardModel from "./CardModel.svelte";
-import { mod } from "../utils";
+import TokenModel from "./TokenModel.svelte";
+import { range } from "../utils";
+import type { GameRunnerSteps } from "../types";
+import ControlsModel from "./ControlsModel.svelte";
+import type { UiSignal } from "../types/UiSignal";
 
 type GameState = {
   playerCount?: number;
   deck?: number[];
   discard?: number[];
   hands?: number[][];
-  player?: number;
+  thisPlayerIndex?: number;
+  clockTokens?: number;
+  fuseTokens?: number;
+  played?: number[];
 };
 
 const pipDistribution = [3, 2, 2, 2, 1].reduce<number[]>((acc, amount, j) => {
@@ -15,91 +22,173 @@ const pipDistribution = [3, 2, 2, 2, 1].reduce<number[]>((acc, amount, j) => {
   return acc.concat(pips);
 }, []);
 
-export default class Hanabi {
+export default class GameModel {
+  static makeDeck() {
+    return colors.flatMap((color, i) =>
+      pipDistribution.map(
+        (pips, j) => new CardModel(color, pips, i * pipDistribution.length + j),
+      ),
+    );
+  }
+
+  static makeClockTokens(count: number) {
+    return range(count).map((i) => {
+      const token = new TokenModel("clock");
+      token.setClockPosition(i);
+      return token;
+    });
+  }
+
+  static makeFuseTokens(count: number) {
+    return range(count).map((i) => {
+      const token = new TokenModel("fuse");
+      token.setFusePosition(i);
+      return token;
+    });
+  }
+
   cards: CardModel[];
   playerCount: number;
   deck: number[];
   discard: number[];
   hands: number[][];
-  player: number;
-
-  static makeDeck() {
-    return colors.flatMap((color) =>
-      pipDistribution.map((pips) => new CardModel(color, pips)),
-    );
-  }
+  played: number[];
+  thisPlayerIndex: number;
+  currentTurn = 0;
+  endTurn = Number.MAX_SAFE_INTEGER;
+  clockTokens: TokenModel[];
+  fuseTokens: TokenModel[];
+  controls: ControlsModel[];
+  cheat: Record<string, unknown>[];
 
   constructor({
     playerCount,
     deck,
     discard,
     hands,
-    player,
+    thisPlayerIndex,
+    clockTokens,
+    fuseTokens,
+    played,
   }: GameState | undefined = {}) {
-    this.cards = $state(Hanabi.makeDeck());
-    this.playerCount = playerCount ?? 4;
-    this.player = player ?? 0;
-    this.hands = $state(hands ?? Array(this.playerCount).fill([]));
+    this.cards = GameModel.makeDeck();
+    this.playerCount = playerCount ?? Math.floor(Math.random() * 2 + 3.5);
+    this.thisPlayerIndex =
+      thisPlayerIndex ?? Math.floor(Math.random() * this.playerCount);
+    this.hands = $state([]);
+    this.controls = $state([]);
+    for (let i = 0; i < this.playerCount; i++) {
+      const hand = $state(hands ? hands[i] : []);
+      this.hands[i] = hand;
+      this.controls[i] = new ControlsModel();
+      this.controls[i].moveToBasePosition(
+        this.getHandVisualIndex(i),
+        this.playerCount,
+      );
+    }
     this.deck = $state(
-      deck ?? this.cards.map((_, i) => i).sort(() => Math.random() - 0.5),
+      deck ??
+        this.cards.map((card) => card.index).sort(() => Math.random() - 0.5),
     );
     this.discard = $state(discard ?? []);
+    this.clockTokens = $state(GameModel.makeClockTokens(clockTokens ?? 5));
+    this.fuseTokens = $state(GameModel.makeFuseTokens(fuseTokens ?? 3));
+    this.played = $state(played ?? []);
 
     for (let i = 0; i < this.deck.length; i++) {
       const cardIndex = this.deck[i];
-      this.cards[cardIndex].setDeckPosition(i);
+      this.cards[cardIndex].moveToDeck(i);
+    }
+
+    this.cheat = $derived.by(() => {
+      const record: Record<string, unknown>[] = [];
+
+      for (const card of this.cards) {
+        const inPlay = this.played.indexOf(card.index);
+        const inDeck = this.deck.indexOf(card.index);
+        const inDiscard = this.discard.indexOf(card.index);
+        const { handIndex, handPosition } = this.getHandPosition(card);
+        const places = [
+          inPlay === -1 ? null : `played${inPlay}`,
+          inDeck === -1 ? null : `deck${inDeck}`,
+          inDiscard === -1 ? null : `discard${inDiscard}`,
+          handIndex === null ? null : `hand${handIndex}${handPosition}`,
+        ].filter(Boolean);
+
+        record[card.index] = {
+          index: card.index,
+          color: card.color,
+          pips: card.pips,
+          places,
+        };
+      }
+
+      return record;
+    });
+  }
+
+  revert(_: unknown) {}
+
+  async execute(runner: (game: GameModel) => GameRunnerSteps) {
+    const state = {};
+    const steps = runner(this);
+
+    for (const step of steps ?? []) {
+      const { error } = await step();
+
+      if (error) {
+        console.warn(error);
+        this.revert(state);
+        break;
+      }
     }
   }
 
-  async deal() {
-    // Deal
-    for (let i = 0; i < this.playerCount; i++) {
-      for (let j = 0; j < 4; j++) {
-        const cardIndex = this.deck.pop();
+  // playOrDiscardCard(card: CardModel) {
+  //   console.log($state.snapshot(this.hands[0]));
+  //   this.popCard(card);
+  //   console.log($state.snapshot(this.hands[0]));
+  //
+  //   if (this.isCardPlayable(card)) {
+  //     this.played.push(card.index);
+  //     card.moveToPlayed();
+  //     return
+  //   }
+  //
+  //   this.signal({ type: 'explosion', matrix: this.fuseTokens[this.fuseTokens.length - 1].matrix.copy() })
+  //   this.fuseTokens.length -= 1;
+  //   this.discard.push(card.index);
+  //   card.moveToDiscard(this.discard.length);
+  // }
+  //
+  // async discardCard(card: CardModel) {
+  //   this.popCard(card);
+  //   this.discard.push(card.index);
+  //   card.moveToDiscard(this.discard.length);
+  //   const token = new TokenModel("clock");
+  //   this.clockTokens.push(token);
+  //   token.setClockPosition(this.clockTokens.length);
+  //   this.signal({ type: "explosion", matrix: token.matrix.copy() });
+  // }
+  //
+  // setupTopDeckCard(card: CardModel) {
+  //   card.onClick = async () => {
+  //     card.onClick = undefined;
+  //     this.deck.pop();
+  //     const nextCard = this.getDeckCard(-1);
+  //     if (nextCard) this.setupTopDeckCard(nextCard);
+  //     this.execute(makePlayOrDiscard(card));
+  //   };
+  // }
+  //
+  // setupTopDiscardCard(card: CardModel) {
+  //   card.onClick = () => {
+  //     console.log("clicks discard");
+  //   };
+  // }
 
-        if (cardIndex === undefined) {
-          console.warn("Ran out of cards when dealing");
-          continue;
-        }
-
-        const card = this.cards[cardIndex];
-        const hand = this.hands[i];
-
-        if (i === this.player) {
-          await card.setPlayerHandPosition(hand.length);
-        } else {
-          const otherIndex = (this.player + i).mod(this.playerCount);
-          await card.setOtherHandPosition(
-            hand.length,
-            otherIndex,
-            this.playerCount,
-          );
-        }
-
-        hand.push(cardIndex);
-        card.onClick = () => {
-          card.play();
-          card.onClick = undefined;
-        };
-      }
-    }
-
-    const setupTopCard = () => {
-      const topCard = this.getDeckCard(-1);
-      if (topCard) {
-        topCard.onClick = () => {
-          topCard.play();
-          topCard.onClick = undefined;
-          this.deck.pop();
-          setupTopCard();
-        };
-      }
-    };
-    setupTopCard();
-  }
-
-  private getHandCard(handIndex: number, handPosition: number, pop?: "pop") {
-    const cardIndex = this.hands[handIndex][handPosition] ?? -1;
+  getHandCard(handIndex: number, handPosition: number, pop?: "pop") {
+    const cardIndex = this.hands[handIndex]?.[handPosition] ?? -1;
 
     if (pop) {
       this.hands[handIndex].splice(handPosition, 1);
@@ -110,14 +199,31 @@ export default class Hanabi {
     return card ? card : null;
   }
 
-  private getDeckCard(deckPosition: number, pop?: "pop") {
+  getHandPosition(card: CardModel) {
+    for (let i = 0; i < this.hands.length; i++) {
+      for (let j = 0; j < this.hands[i].length; j++) {
+        if (this.hands[i][j] === card.index) {
+          return {
+            handIndex: i,
+            handPosition: j,
+          };
+        }
+      }
+    }
+
+    return {
+      handIndex: null,
+      handPosition: null,
+    };
+  }
+
+  getDeckCard(deckPosition: number, pop?: "pop") {
     const deckIndex =
       deckPosition >= 0 ? deckPosition : this.deck.length + deckPosition;
-    console.log(this.deck.length);
     const cardIndex = this.deck[deckIndex] ?? -1;
 
     if (pop) {
-      this.deck.splice(deckPosition, 1);
+      this.deck.splice(deckIndex, 1);
     }
 
     const card = this.cards[cardIndex];
@@ -125,5 +231,60 @@ export default class Hanabi {
     return card ? card : null;
   }
 
+  getDiscardCard(discardPosition: number, pop?: "pop") {
+    const discardIndex =
+      discardPosition >= 0
+        ? discardPosition
+        : this.discard.length + discardPosition;
+    const cardIndex = this.discard[discardIndex] ?? -1;
+
+    if (pop) {
+      this.discard.splice(discardIndex, 1);
+    }
+
+    const card = this.cards[cardIndex];
+
+    return card ? card : null;
+  }
+
+  popCard(card: CardModel) {
+    this.deck = this.deck.filter((cardIndex) => cardIndex !== card.index);
+    this.discard = this.discard.filter((cardIndex) => cardIndex !== card.index);
+    this.played = this.played.filter((cardIndex) => cardIndex !== card.index);
+
+    for (let i = 0; i < this.hands.length; i++) {
+      this.hands[i] = this.hands[i].filter(
+        (cardIndex) => cardIndex !== card.index,
+      );
+    }
+  }
+
+  isCardPlayable(card: CardModel) {
+    let oneLessPipsCard: CardModel | null = null;
+    let sameCard: CardModel | null = null;
+
+    for (const i of this.played) {
+      const otherCard = this.cards[i];
+      if (card.color !== otherCard?.color) continue;
+      if (card.pips === otherCard?.pips) sameCard = otherCard;
+      if (card.pips === otherCard?.pips + 1) oneLessPipsCard = otherCard;
+    }
+
+    if (card.pips === 1) {
+      return Boolean(!sameCard);
+    }
+
+    return Boolean(!sameCard && oneLessPipsCard);
+  }
+
+  getHandVisualIndex(handIndex: number) {
+    if (handIndex === this.thisPlayerIndex) {
+      return -1;
+    }
+
+    return (handIndex - this.thisPlayerIndex).mod(this.playerCount) - 1;
+  }
+
   onClick = async () => {};
+  signal = (_: UiSignal) => {};
 }

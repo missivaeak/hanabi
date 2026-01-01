@@ -1,5 +1,10 @@
-import { colors, type Color } from "@repo/shared";
-import { mod } from "../utils";
+import { colors, type Color, type PipCount } from "@repo/shared";
+import {
+  DECK_TABINDEX,
+  DISCARD_TABINDEX,
+  OTHERS_HAND_TABINDEX_START,
+  PLAYER_HAND_TABINDICES,
+} from "../utils";
 
 const handOffsetTransforms = [
   new DOMMatrix().translate(0, 5, 0).rotate(8, 8, -9),
@@ -8,43 +13,67 @@ const handOffsetTransforms = [
   new DOMMatrix().translate(0, 5, 0).rotate(8, 8, 9),
 ];
 
-const DECK_TABINDEX = 1;
-const DISCARD_TABINDEX = 2;
-const PLAYER_HAND_TABINDICES = [6, 5, 4, 3];
-const OTHERS_HAND_TABINDEX_START = 7;
+const baseKnowledge: CardKnowledge = {
+  color: {
+    a: true,
+    b: true,
+    c: true,
+    d: true,
+    e: true,
+  },
+  pips: {
+    1: true,
+    2: true,
+    3: true,
+    4: true,
+    5: true,
+  },
+};
+
+export type CardKnowledge = {
+  color: {
+    [K in Color]: boolean;
+  };
+  pips: {
+    [K in PipCount]: boolean;
+  };
+};
 
 export default class CardModel {
   pips: number;
   color: Color;
+  index: number;
+  knowledge: CardKnowledge;
   tabindex = $state(-1);
   matrix = $state(new DOMMatrix());
 
-  constructor(color: Color, pips: number) {
+  constructor(
+    color: Color,
+    pips: number,
+    index: number,
+    cardKnowledge?: CardKnowledge,
+  ) {
     this.pips = pips;
     this.color = color;
+    this.index = index;
+    this.knowledge = $state(cardKnowledge ?? baseKnowledge);
   }
 
-  async delay() {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  setDeckPosition(deckPosition: number) {
+  moveToDeck(deckPosition: number) {
     this.matrix = new DOMMatrix()
       .rotate(0, 180, 0)
-      .translate(100, -380, -deckPosition);
+      .translate(90, -380, -deckPosition);
     this.tabindex = DECK_TABINDEX;
   }
 
-  async setDiscardPosition(discardPosition: number) {
+  moveToDiscard(discardPosition: number) {
     this.matrix = new DOMMatrix()
-      .rotate(0, 180, 0)
-      .translate(-100, -380, -discardPosition);
+      .rotate(180, 180, 0)
+      .translate(-90, 380, discardPosition);
     this.tabindex = DISCARD_TABINDEX;
-
-    await this.delay();
   }
 
-  async play() {
+  moveToPlayed() {
     const colorOffset = 180;
     const xOffset = colors.indexOf(this.color) * colorOffset;
     const pipOffset = this.pips * 50;
@@ -57,35 +86,26 @@ export default class CardModel {
     this.tabindex = -1;
   }
 
-  async setPlayerHandPosition(handPosition: number) {
-    const handOffsetAngles = [-15, -5, 5, 15];
-    const offsetTransform = handOffsetTransforms[handPosition];
+  moveToThisPlayer(handPosition: number) {
+    const handOffsetAngles = [-22.5, -7.5, 7.5, 22.5];
     const offsetRotation = handOffsetAngles[handPosition];
     const degrees = 180 + offsetRotation;
     const radius = 650;
 
     this.matrix = new DOMMatrix()
-      .translate(0, 0, 122)
+      .translate(0, 0, 20)
       .rotate(-90, 0, degrees)
-      .translate(0, 0, -radius)
-      .rotate(0, 6, 0)
-      .multiply(offsetTransform);
+      .translate(0, 0, -radius);
 
     this.tabindex = PLAYER_HAND_TABINDICES[handPosition];
-
-    await this.delay();
   }
 
-  async setOtherHandPosition(
-    handPosition: number,
-    hand: number,
-    playerCount: number,
-  ) {
+  moveToOtherPlayer(handPosition: number, hand: number, playerCount: number) {
     const handOffsetAngles = [-9, -3, 3, 9];
     const offsetTransform = handOffsetTransforms[handPosition];
     const offsetRotation = handOffsetAngles[handPosition];
     const otherHandsCount = playerCount - 1;
-    const degrees = 190 * (hand / otherHandsCount) - 68 + offsetRotation;
+    const degrees = 180 * ((hand + 1) / playerCount) - 90 + offsetRotation;
     const radius = 590;
 
     this.matrix = new DOMMatrix()
@@ -95,8 +115,6 @@ export default class CardModel {
       .multiply(offsetTransform);
     this.tabindex =
       OTHERS_HAND_TABINDEX_START + hand * otherHandsCount + handPosition;
-
-    await this.delay();
   }
 
   onClick: (() => void) | undefined = $state(undefined);

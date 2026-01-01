@@ -1,16 +1,19 @@
 <script lang="ts">
-import { type Color } from "@repo/shared";
+import { colors, pipCounts, type Color } from "@repo/shared";
+import type { CardKnowledge } from "../model/CardModel.svelte";
+import Knowledge from "./Knowledge.svelte";
 
 type Props = {
   color: Color;
   pips: number;
+  knowledge: CardKnowledge;
 };
 
-let { color, pips }: Props = $props();
+let { color, pips, knowledge }: Props = $props();
 </script>
 
 <div class={`card card--color-${color} card--count-${pips}`} >
-  {#each { length: pips }, pip}
+  {#each { length: pips }}
     <div class="card__pip-wrapper">
       <div class={`card__pip card__pip--color-${color}`}></div>
     </div>
@@ -19,6 +22,7 @@ let { color, pips }: Props = $props();
   <span class="card__number">{pips}</span>
   <div class="card__back">
     <span class="card__back-text">hanabi</span>
+    <Knowledge knowledge={knowledge} interactable={true} />
   </div>
 </div>
 

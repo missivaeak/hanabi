@@ -1,6 +1,5 @@
 <script lang="ts">
 import { type Snippet } from "svelte";
-import type { MouseEventHandler } from "svelte/elements";
 
 type Props = {
   children: Snippet;
@@ -13,7 +12,17 @@ type Props = {
 let { children, matrix, onclick, tabindex }: Props = $props();
 </script>
 
-<button class="controller" style:transform={matrix?.toCSS()} onclick={onclick} onkeypress={onclick} tabindex={tabindex}>
+<button
+  class="controller"
+  style:transform={matrix?.toCSS()}
+  onclick={(event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onclick?.();
+  }}
+  onkeypress={onclick}
+  tabindex={tabindex}
+>
   <div class={onclick ? 'controller__hoverer' : ''}>
     {@render children?.()}
   </div>
@@ -33,6 +42,10 @@ let { children, matrix, onclick, tabindex }: Props = $props();
   outline: unset;
   background: unset;
   box-shadow: unset;
+}
+
+.controller__hoverer {
+  transition: scale 0.1s linear;
 }
 
 .controller:hover .controller__hoverer,
